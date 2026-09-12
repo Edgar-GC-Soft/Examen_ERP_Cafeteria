@@ -9,15 +9,16 @@
   <div class="card">
     <h3 style="margin-bottom: 1rem;">Catálogo de productos</h3>
     <div class="grid grid-2">
-      @for (producto of productos; track producto.nombre) {
-        <!-- aqui se recorre el arreglo productos de ventas.ts -->
+      
+      @for (producto of productos(); track producto.id) {
+        <!-- aqui se recorre el arreglo productos -->
         <app-producto-card
           [nombre]="producto.nombre"
-          [precio]="producto.precio"
+          [precio]="producto.costoVenta"
           [imagen]="producto.imagen">
-          <!-- aqui se manda la informacion al componente producto-card -->
-        </app-producto-card>
-      }
+    <!-- aqui se manda la informacion al componente producto-card -->
+  </app-producto-card>
+}
     </div>
   </div>
 
