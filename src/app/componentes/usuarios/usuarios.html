@@ -8,11 +8,10 @@
 <div class="card" style="margin-bottom: 1.3rem;">
   <div class="section-head">
     <h3>Usuarios registrados</h3>
-    <button class="btn btn-primario btn-sm">+ Registrar usuario</button>
   </div>
   <table>
     <tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Salario</th><th></th></tr>
-    @for (usuario of usuarios; track usuario.correo) {
+    @for (usuario of usuarios(); track usuario.id) {
       <tr>
         <td>{{ usuario.nombre }}</td>
         <td>{{ usuario.correo }}</td>
@@ -21,28 +20,36 @@
             {{ usuario.rol }}
           </span>
         </td>
-        <td>{{ usuario.salario }}</td>
-        <td><a class="btn btn-outline btn-sm" href="#">Editar</a></td>
+        <td>{{ usuario.salario ?? '-' }}</td>
+        <td style="display: flex; gap: 0.4rem;">
+          <button class="btn btn-outline btn-sm" (click)="editar(usuario)">Editar</button>
+          <button class="btn btn-outline btn-sm" (click)="eliminar(usuario.id)">Eliminar</button>
+        </td>
       </tr>
     }
   </table>
 </div>
 
 <div class="card">
-  <h3 style="margin-bottom: 1rem;">Registrar nuevo usuario</h3>
+  <h3 style="margin-bottom: 1rem;">{{ editando() ? 'Editar usuario' : 'Registrar nuevo usuario' }}</h3>
   <div class="row">
-    <div class="field"><label>Nombre</label><input placeholder="Nombre completo"></div>
-    <div class="field"><label>Correo</label><input placeholder="correo@cafeteria.com"></div>
+    <div class="field"><label>Nombre</label><input [(ngModel)]="form.nombre" placeholder="Nombre completo"></div>
+    <div class="field"><label>Correo</label><input [(ngModel)]="form.correo" placeholder="correo@cafeteria.com"></div>
   </div>
   <div class="row">
     <div class="field">
       <label>Rol</label>
-      <select>
+      <select [(ngModel)]="form.rol">
         <option>Administrador</option>
         <option>Cliente</option>
       </select>
     </div>
-    <div class="field"><label>Salario (si aplica)</label><input placeholder="$0.00"></div>
+    <div class="field"><label>Salario (si aplica)</label><input [(ngModel)]="form.salario" type="number" placeholder="0.00"></div>
   </div>
-  <button class="btn btn-primario">Guardar usuario</button>
+  <div class="field"><label>Contraseña</label><input [(ngModel)]="form.passwordHash" type="password" placeholder="********"></div>
+
+  <button class="btn btn-primario" (click)="guardar()">{{ editando() ? 'Actualizar usuario' : 'Guardar usuario' }}</button>
+  @if (editando()) {
+    <button class="btn btn-outline" (click)="limpiarFormulario()">Cancelar</button>
+  }
 </div>

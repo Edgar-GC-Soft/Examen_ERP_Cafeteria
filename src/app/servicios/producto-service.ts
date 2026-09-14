@@ -41,4 +41,7 @@ export class ProductoService {
   eliminarProducto(id: number): Observable<any> {
     return this.http.delete(`${this.api}/${id}`); // aqui se hace la peticion DELETE
   }
+    actualizarProducto(id: number, producto: any): Observable<any> {
+    return this.http.put(`${this.api}/${id}`, producto); // aqui se hace la peticion PUT
+  }
 }

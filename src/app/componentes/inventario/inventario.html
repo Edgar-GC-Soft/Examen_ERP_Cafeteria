@@ -5,28 +5,49 @@
   </div>
 </div>
 
-<div class="card">
+<div class="card" style="margin-bottom: 1.3rem;">
   <div class="section-head">
     <h3>Catálogo de productos</h3>
-    <button class="btn btn-primario btn-sm">+ Registrar producto</button>
   </div>
   <table>
     <tr><th>Producto</th><th>Costo compra</th><th>Costo venta</th><th>Stock</th><th>Estado</th><th></th></tr>
-    @for (producto of productos; track producto.nombre) {
+    @for (producto of productos(); track producto.id) {
       <tr>
         <td>{{ producto.nombre }}</td>
         <td>$ {{ producto.costoCompra }}</td>
-        <td>{{ producto.costoVenta ? '$ ' + producto.costoVenta : '-' }}</td>
+        <td>$ {{ producto.costoVenta }}</td>
         <td>{{ producto.stock }}</td>
         <td>
-          @if (producto.bajo) {
+          @if (stockBajo(producto)) {
             <span class="badge badge-low">Stock bajo</span>
           } @else {
             <span class="badge badge-ok">Disponible</span>
           }
         </td>
-        <td><a class="btn btn-outline btn-sm" href="#">Editar</a></td>
+        <td style="display: flex; gap: 0.4rem;">
+          <button class="btn btn-outline btn-sm" (click)="editar(producto)">Editar</button>
+          <button class="btn btn-outline btn-sm" (click)="eliminar(producto.id)">Eliminar</button>
+        </td>
       </tr>
     }
   </table>
+</div>
+
+<div class="card">
+  <h3 style="margin-bottom: 1rem;">{{ editando() ? 'Editar producto' : 'Registrar nuevo producto' }}</h3>
+  <div class="row">
+    <div class="field"><label>Nombre</label><input [(ngModel)]="form.nombre" placeholder="Nombre del producto"></div>
+    <div class="field"><label>Descripción</label><input [(ngModel)]="form.descripcion" placeholder="Descripción breve"></div>
+  </div>
+  <div class="row">
+    <div class="field"><label>Costo de compra</label><input [(ngModel)]="form.costoCompra" type="number" placeholder="0.00"></div>
+    <div class="field"><label>Costo de venta</label><input [(ngModel)]="form.costoVenta" type="number" placeholder="0.00"></div>
+    <div class="field"><label>Stock</label><input [(ngModel)]="form.stock" type="number" placeholder="0"></div>
+  </div>
+  <div class="field"><label>Imagen (ruta)</label><input [(ngModel)]="form.imagen" placeholder="imagenes/producto.jpg"></div>
+
+  <button class="btn btn-primario" (click)="guardar()">{{ editando() ? 'Actualizar producto' : 'Guardar producto' }}</button>
+  @if (editando()) {
+    <button class="btn btn-outline" (click)="limpiarFormulario()">Cancelar</button>
+  }
 </div>

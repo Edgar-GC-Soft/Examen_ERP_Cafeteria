@@ -31,5 +31,13 @@ router.delete('/:id', (req, res) => {
         res.json({ mensaje: 'Usuario eliminado' });
     });
 });
-
+// PUT: actualizar un usuario por id
+router.put('/:id', (req, res) => {
+    usuarioService.actualizarUsuario(req.params.id, req.body, (error, resultado) => {
+        if (error) {
+            return res.status(500).json({ mensaje: 'Error al actualizar usuario' });
+        }
+        res.json({ mensaje: 'Usuario actualizado' });
+    });
+});
 module.exports = router;

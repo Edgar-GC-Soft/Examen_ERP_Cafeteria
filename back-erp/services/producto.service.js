@@ -42,8 +42,29 @@ function eliminarProducto(id, callback) {
     });
 }
 
+function actualizarProducto(id, producto, callback) {
+    const sql = `UPDATE productos SET nombre = ?, descripcion = ?, costo_compra = ?, costo_venta = ?, stock = ?, imagen = ? WHERE id = ?`;
+    const valores = [
+        producto.nombre,
+        producto.descripcion,
+        producto.costoCompra,
+        producto.costoVenta,
+        producto.stock,
+        producto.imagen,
+        id
+    ];
+    db.query(sql, valores, (error, resultado) => {
+        if (error) {
+            callback(error, null);
+            return;
+        }
+        callback(null, resultado);
+    });
+}
+
 module.exports = {
     obtenerProductos,
     agregarProducto,
+    actualizarProducto,
     eliminarProducto
 };

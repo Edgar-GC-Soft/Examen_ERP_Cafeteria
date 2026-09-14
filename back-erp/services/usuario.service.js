@@ -41,8 +41,28 @@ function eliminarUsuario(id, callback) {
     });
 }
 
+function actualizarUsuario(id, usuario, callback) {
+    const sql = `UPDATE usuarios SET nombre = ?, correo = ?, password_hash = ?, rol = ?, salario = ? WHERE id = ?`;
+    const valores = [
+        usuario.nombre,
+        usuario.correo,
+        usuario.passwordHash,
+        usuario.rol,
+        usuario.salario,
+        id
+    ];
+    db.query(sql, valores, (error, resultado) => {
+        if (error) {
+            callback(error, null);
+            return;
+        }
+        callback(null, resultado);
+    });
+}
+
 module.exports = {
     obtenerUsuarios,
     agregarUsuario,
+    actualizarUsuario,
     eliminarUsuario
 };
