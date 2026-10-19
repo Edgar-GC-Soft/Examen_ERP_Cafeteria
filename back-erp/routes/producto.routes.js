@@ -1,43 +1,27 @@
 const express = require('express');
 const router = express.Router();
+const { permitir } = require('../middleware/auth');
 const productoService = require('../services/producto.service');
 
-// GET: ver todos los productos
-router.get('/', (req, res) => {
-    productoService.obtenerProductos((error, productos) => {
-        if (error) {
-            return res.status(500).json({ mensaje: 'Error al consultar productos' });
-        }
-        res.json(productos);
-    });
+// GET: catalogo (admin y cliente)
+router.get('/', async (req, res) => {
+    res.json(await productoService.obtenerProductos(req.usuario.rol));
 });
 
-// POST: agregar un producto
-router.post('/', (req, res) => {
-    productoService.agregarProducto(req.body, (error, resultado) => {
-        if (error) {
-            return res.status(500).json({ mensaje: 'Error al agregar producto' });
-        }
-        res.json({ mensaje: 'Producto agregado', id: resultado.insertId });
-    });
+// POST, PUT y DELETE: solo admin
+router.post('/', permitir('admin'), async (req, res) => {
+    const id = await productoService.agregarProducto(req.body);
+    res.status(201).json({ mensaje: 'Producto agregado', id });
 });
 
-// DELETE: eliminar un producto por id
-router.delete('/:id', (req, res) => {
-    productoService.eliminarProducto(req.params.id, (error, resultado) => {
-        if (error) {
-            return res.status(500).json({ mensaje: 'Error al eliminar producto' });
-        }
-        res.json({ mensaje: 'Producto eliminado' });
-    });
+router.put('/:id', permitir('admin'), async (req, res) => {
+    await productoService.actualizarProducto(req.params.id, req.body);
+    res.json({ mensaje: 'Producto actualizado' });
 });
-// PUT: actualizar un producto por id
-router.put('/:id', (req, res) => {
-    productoService.actualizarProducto(req.params.id, req.body, (error, resultado) => {
-        if (error) {
-            return res.status(500).json({ mensaje: 'Error al actualizar producto' });
-        }
-        res.json({ mensaje: 'Producto actualizado' });
-    });
+
+router.delete('/:id', permitir('admin'), async (req, res) => {
+    await productoService.eliminarProducto(req.params.id);
+    res.json({ mensaje: 'Producto eliminado' });
 });
+
 module.exports = router;

@@ -2,42 +2,24 @@ const express = require('express');
 const router = express.Router();
 const usuarioService = require('../services/usuario.service');
 
-// GET: ver todos los usuarios
-router.get('/', (req, res) => {
-    usuarioService.obtenerUsuarios((error, usuarios) => {
-        if (error) {
-            return res.status(500).json({ mensaje: 'Error al consultar usuarios' });
-        }
-        res.json(usuarios);
-    });
+// todas estas rutas son solo para admin (se protege en server.js)
+router.get('/', async (req, res) => {
+    res.json(await usuarioService.obtenerUsuarios());
 });
 
-// POST: agregar un usuario
-router.post('/', (req, res) => {
-    usuarioService.agregarUsuario(req.body, (error, resultado) => {
-        if (error) {
-            return res.status(500).json({ mensaje: 'Error al agregar usuario' });
-        }
-        res.json({ mensaje: 'Usuario agregado', id: resultado.insertId });
-    });
+router.post('/', async (req, res) => {
+    const id = await usuarioService.agregarUsuario(req.body);
+    res.status(201).json({ mensaje: 'Usuario agregado', id });
 });
 
-// DELETE: eliminar un usuario por id
-router.delete('/:id', (req, res) => {
-    usuarioService.eliminarUsuario(req.params.id, (error, resultado) => {
-        if (error) {
-            return res.status(500).json({ mensaje: 'Error al eliminar usuario' });
-        }
-        res.json({ mensaje: 'Usuario eliminado' });
-    });
+router.put('/:id', async (req, res) => {
+    await usuarioService.actualizarUsuario(req.params.id, req.body);
+    res.json({ mensaje: 'Usuario actualizado' });
 });
-// PUT: actualizar un usuario por id
-router.put('/:id', (req, res) => {
-    usuarioService.actualizarUsuario(req.params.id, req.body, (error, resultado) => {
-        if (error) {
-            return res.status(500).json({ mensaje: 'Error al actualizar usuario' });
-        }
-        res.json({ mensaje: 'Usuario actualizado' });
-    });
+
+router.delete('/:id', async (req, res) => {
+    await usuarioService.eliminarUsuario(req.params.id, req.usuario.id);
+    res.json({ mensaje: 'Usuario eliminado' });
 });
+
 module.exports = router;

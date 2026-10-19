@@ -3,22 +3,27 @@
     <span class="marca-texto">ERP <strong>Cafetería</strong></span>
   </div>
 
-  <ul class="menu-lista">
-    <li><a routerLink="/login" routerLinkActive="active">Login</a></li>
-    <!-- aqui se enruta con login.ts -->
-    <li><a routerLink="/dashboard" routerLinkActive="active">Dashboard</a></li>
-    <!-- aqui se enruta con dashboard.ts -->
-    <li><a routerLink="/usuarios" routerLinkActive="active">Usuarios</a></li>
-    <!-- aqui se enruta con usuarios.ts -->
-    <li><a routerLink="/inventario" routerLinkActive="active">Inventario</a></li>
-    <!-- aqui se enruta con inventario.ts -->
-    <li><a routerLink="/compras" routerLinkActive="active">Compras</a></li>
-    <!-- aqui se enruta con compras.ts -->
-    <li><a routerLink="/ventas" routerLinkActive="active">Ventas</a></li>
-    <!-- aqui se enruta con ventas.ts -->
-    <li><a routerLink="/contabilidad" routerLinkActive="active">Contabilidad</a></li>
-    <!-- aqui se enruta con contabilidad.ts -->
-    <li><a routerLink="/rh" routerLinkActive="active">RH</a></li>
-    <!-- aqui se enruta con rh.ts -->
-  </ul>
+  @if (authService.sesion(); as usuario) {
+    <p class="saludo">Hola {{ usuario.nombre }}, {{ authService.textoRol(usuario.rol) }}</p>
+
+    <ul class="menu-lista">
+      @if (usuario.rol === 'admin') {
+        <!-- opciones solo para el administrador -->
+        <li><a routerLink="/dashboard" routerLinkActive="active">Dashboard</a></li>
+        <li><a routerLink="/usuarios" routerLinkActive="active">Usuarios</a></li>
+        <li><a routerLink="/inventario" routerLinkActive="active">Inventario</a></li>
+        <li><a routerLink="/proveedores" routerLinkActive="active">Proveedores</a></li>
+        <li><a routerLink="/compras" routerLinkActive="active">Compras</a></li>
+      }
+      <!-- opciones para administrador y cliente -->
+      <li><a routerLink="/ventas" routerLinkActive="active">Ventas</a></li>
+      <li><a routerLink="/historial" routerLinkActive="active">Historial</a></li>
+      @if (usuario.rol === 'admin') {
+        <li><a routerLink="/contabilidad" routerLinkActive="active">Contabilidad</a></li>
+        <li><a routerLink="/rh" routerLinkActive="active">RH</a></li>
+      }
+    </ul>
+
+    <button type="button" class="btn-salir" (click)="cerrarSesion()">Cerrar sesión</button>
+  }
 </aside>

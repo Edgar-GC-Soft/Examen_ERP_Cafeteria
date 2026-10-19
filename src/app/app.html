@@ -1,6 +1,8 @@
 <div class="layout">
-  <app-nav-bar></app-nav-bar>
-  <!-- aqui se muestra el componente nav-bar -->
+  @if (authService.sesion()) {
+    <app-nav-bar></app-nav-bar>
+    <!-- el menu solo aparece cuando hay una sesion iniciada -->
+  }
 
   <div class="columna-derecha">
     <main class="contenido">

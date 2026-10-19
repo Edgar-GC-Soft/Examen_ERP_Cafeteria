@@ -1,0 +1,18 @@
+<div class="sin-acceso-contenedor">
+  <section class="card sin-acceso-tarjeta">
+    <p class="codigo">{{ error ? '401' : '403' }}</p>
+    <h1>{{ error ? 'Credenciales inválidas' : 'Sin acceso' }}</h1>
+
+    @if (usuario && !error) {
+      <p class="saludo">Hola {{ usuario.nombre }}, {{ rolTexto }}</p>
+    }
+
+    <p class="muted">
+      {{ error ?? 'Tu sesión es válida, pero tu rol no tiene permiso para ver esta sección.' }}
+    </p>
+
+    <button type="button" class="btn btn-primario" style="margin-top: 1.2rem;" (click)="volver()">
+      Volver a iniciar sesión
+    </button>
+  </section>
+</div>

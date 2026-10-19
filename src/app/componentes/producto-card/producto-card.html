@@ -8,6 +8,8 @@
     <!-- aqui se muestra el nombre que llego por input -->
     <p class="producto-precio">$ {{ precio() }} MXN</p>
     <!-- aqui se muestra el precio que llego por input -->
-    <button class="btn btn-primario">Agregar al carrito</button>
+    <button class="btn btn-primario" [disabled]="stock() < 1" (click)="agregar.emit()">
+      {{ stock() < 1 ? 'Agotado' : 'Agregar al carrito' }}
+    </button>
   </div>
 </article>

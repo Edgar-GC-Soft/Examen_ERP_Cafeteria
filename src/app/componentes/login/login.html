@@ -1,21 +1,29 @@
 <div class="login-contenedor">
-  <div class="card login-card">
+  <form class="card login-card" (submit)="iniciarSesion($event)">
     <div class="login-marca">ERP <span>Cafetería</span></div>
     <p class="muted" style="margin-bottom: 1.5rem;">Panel de administración</p>
 
     <div class="field">
-      <label>Correo</label>
-      <input type="email" placeholder="correo@cafeteria.com">
+      <label for="correo">Correo</label>
+      <input type="email" id="correo" name="correo" placeholder="correo@cafeteria.com"
+             autocomplete="username" required>
     </div>
     <div class="field">
-      <label>Contraseña</label>
-      <input type="password" placeholder="********">
+      <label for="contrasena">Contraseña</label>
+      <input type="password" id="contrasena" name="contrasena" placeholder="********"
+             autocomplete="current-password" required>
     </div>
 
-    <a routerLink="/dashboard" class="btn btn-primario login-boton">Iniciar sesión</a>
+    @if (bienvenida()) {
+      <p class="bienvenida">{{ bienvenida() }}</p>
+    }
+
+    <button type="submit" class="btn btn-primario login-boton" [disabled]="cargando()">
+      {{ cargando() ? 'Ingresando...' : 'Iniciar sesión' }}
+    </button>
 
     <p class="muted" style="margin-top: 1rem; font-size: 0.78rem;">
       Acceso para Administrador y Cliente.
     </p>
-  </div>
+  </form>
 </div>

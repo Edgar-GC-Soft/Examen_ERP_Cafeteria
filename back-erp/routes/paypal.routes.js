@@ -1,0 +1,78 @@
+const express = require('express');
+const router = express.Router();
+const { paypalRequest } = require('../services/paypal.service');
+const ventaService = require('../services/venta.service');
+const correoService = require('../services/correo.service');
+const { consultar } = require('../config/db');
+
+router.post('/orden', async (req, res) => {
+    try {
+        // recibir los productos, consultar precios en la bd, calcular el total y guardar la venta (CREADA)
+        const { ventaId, total } = await ventaService.crearVenta(req.usuario.id, { ...req.body, metodoPago: 'paypal' });
+
+        // crear orden mediante PayPal
+        const orden = await paypalRequest('/v2/checkout/orders', 'POST', {
+            intent: 'CAPTURE',
+            purchase_units: [{ amount: { currency_code: 'MXN', value: total.toFixed(2) } }]
+        });
+        await consultar('UPDATE ventas SET paypal_order_id = ? WHERE id = ?', [orden.id, ventaId]);
+
+        // devolver el id de la orden
+        res.json({ id: orden.id, total });
+    } catch (error) {
+        if (error.status) throw error; // errores de validacion (400, 409...)
+        console.error(error);
+        res.status(502).json({ mensaje: 'No se pudo crear la orden' });
+    }
+});
+
+router.post('/capturar/:orderId', async (req, res) => {
+    const { orderId } = req.params;
+    try {
+        // recuperar la orden local (solo la del usuario que la creo)
+        const [venta] = await consultar(
+            'SELECT * FROM ventas WHERE paypal_order_id = ? AND cliente_id = ?', [orderId, req.usuario.id]
+        );
+        if (!venta) {
+            return res.status(404).json({ mensaje: 'Orden no encontrada' });
+        }
+        // solo una peticion puede pasar de CREADA a PROCESANDO
+        const paso = await consultar("UPDATE ventas SET estado = 'PROCESANDO' WHERE id = ? AND estado = 'CREADA'", [venta.id]);
+        if (paso.affectedRows === 0) {
+            return res.status(409).json({ mensaje: 'La orden ya fue procesada' });
+        }
+
+        // solicitar captura a PayPal
+        const resultado = await paypalRequest(`/v2/checkout/orders/${orderId}/capture`, 'POST');
+
+        // verificar estado e importe
+        const captura = resultado.purchase_units
+            ?.flatMap((u) => u.payments?.captures || [])
+            .find((c) => c.status === 'COMPLETED');
+        const valido = resultado.id === orderId &&
+            resultado.status === 'COMPLETED' &&
+            captura?.amount?.currency_code === 'MXN' &&
+            Math.round(Number(captura?.amount?.value) * 100) === Math.round(venta.total * 100);
+
+        if (!valido) {
+            await consultar("UPDATE ventas SET estado = 'REVISION' WHERE id = ?", [venta.id]);
+            return res.status(409).json({ mensaje: 'Pago pendiente de verificacion' });
+        }
+
+        // registrar el pago en la bd (stock, ingreso y XML) y mandar el correo con el recibo
+        const datos = await ventaService.completarVenta(venta.id);
+        const correoEnviado = await correoService.enviarRecibo({ ...datos, captureId: captura.id });
+
+        res.json({
+            mensaje: 'Pago completado', orderId, captureId: captura.id,
+            estado: 'PAGADA', folio: datos.factura.folio, correoEnviado
+        });
+    } catch (error) {
+        console.error(error);
+        // no asumir que el pago fallo
+        await consultar("UPDATE ventas SET estado = 'REVISION' WHERE paypal_order_id = ? AND estado = 'PROCESANDO'", [orderId]);
+        res.status(502).json({ mensaje: 'Verificar estado del pago' });
+    }
+});
+
+module.exports = router;

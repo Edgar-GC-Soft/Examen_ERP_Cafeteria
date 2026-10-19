@@ -1,22 +1,41 @@
 import { Routes } from '@angular/router';
-import { Login } from './componentes/login/login'; // aqui se importa el componente login
-import { Dashboard } from './componentes/dashboard/dashboard'; // aqui se importa el componente dashboard
-import { Usuarios } from './componentes/usuarios/usuarios'; // aqui se importa el componente usuarios
-import { Inventario } from './componentes/inventario/inventario'; // aqui se importa el componente inventario
-import { Compras } from './componentes/compras/compras'; // aqui se importa el componente compras
-import { Ventas } from './componentes/ventas/ventas'; // aqui se importa el componente ventas
-import { Contabilidad } from './componentes/contabilidad/contabilidad'; // aqui se importa el componente contabilidad
-import { Rh } from './componentes/rh/rh'; // aqui se importa el componente rh
+import { Login } from './componentes/login/login';
+import { SinAcceso } from './componentes/sin-acceso/sin-acceso';
+import { Dashboard } from './componentes/dashboard/dashboard';
+import { Usuarios } from './componentes/usuarios/usuarios';
+import { Inventario } from './componentes/inventario/inventario';
+import { Proveedores } from './componentes/proveedores/proveedores';
+import { Compras } from './componentes/compras/compras';
+import { Ventas } from './componentes/ventas/ventas';
+import { Checkout } from './componentes/checkout/checkout';
+import { Historial } from './componentes/historial/historial';
+import { Contabilidad } from './componentes/contabilidad/contabilidad';
+import { Rh } from './componentes/rh/rh';
+import { authGuard } from './guard/auth-guard';
+import { roleGuard } from './guard/role-guard';
 
 export const routes: Routes = [
-  { path: '', component: Login }, // aqui se enruta la raiz con el componente Login
-  { path: 'login', component: Login }, // aqui se enruta /login con el componente Login
-  { path: 'dashboard', component: Dashboard }, // aqui se enruta /dashboard con el componente Dashboard
-  { path: 'usuarios', component: Usuarios }, // aqui se enruta /usuarios con el componente Usuarios
-  { path: 'inventario', component: Inventario }, // aqui se enruta /inventario con el componente Inventario
-  { path: 'compras', component: Compras }, // aqui se enruta /compras con el componente Compras
-  { path: 'ventas', component: Ventas }, // aqui se enruta /ventas con el componente Ventas
-  { path: 'contabilidad', component: Contabilidad }, // aqui se enruta /contabilidad con el componente Contabilidad
-  { path: 'rh', component: Rh }, // aqui se enruta /rh con el componente Rh
-  { path: '**', redirectTo: '' } // aqui se redirige cualquier ruta invalida a la raiz
+  // ruta inicial
+  { path: '', redirectTo: '/login', pathMatch: 'full' },
+  // rutas publicas
+  { path: 'login', component: Login },
+  { path: 'sin-acceso', component: SinAcceso },
+
+  // rutas protegidas: primero revisa la sesion y luego el rol
+  // solo administrador
+  { path: 'dashboard', component: Dashboard, canActivate: [authGuard, roleGuard], data: { roles: ['admin'] } },
+  { path: 'usuarios', component: Usuarios, canActivate: [authGuard, roleGuard], data: { roles: ['admin'] } },
+  { path: 'inventario', component: Inventario, canActivate: [authGuard, roleGuard], data: { roles: ['admin'] } },
+  { path: 'proveedores', component: Proveedores, canActivate: [authGuard, roleGuard], data: { roles: ['admin'] } },
+  { path: 'compras', component: Compras, canActivate: [authGuard, roleGuard], data: { roles: ['admin'] } },
+  { path: 'contabilidad', component: Contabilidad, canActivate: [authGuard, roleGuard], data: { roles: ['admin'] } },
+  { path: 'rh', component: Rh, canActivate: [authGuard, roleGuard], data: { roles: ['admin'] } },
+
+  // administrador y cliente
+  { path: 'ventas', component: Ventas, canActivate: [authGuard, roleGuard], data: { roles: ['admin', 'cliente'] } },
+  { path: 'checkout', component: Checkout, canActivate: [authGuard, roleGuard], data: { roles: ['admin', 'cliente'] } },
+  { path: 'historial', component: Historial, canActivate: [authGuard, roleGuard], data: { roles: ['admin', 'cliente'] } },
+
+  // cualquier otra ruta
+  { path: '**', redirectTo: '/login' }
 ];

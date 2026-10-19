@@ -1,0 +1,41 @@
+<div class="topbar">
+  <div>
+    <div class="eyebrow">Ventas y facturación</div>
+    <h1>{{ esAdmin ? 'Historial de facturas' : 'Mis compras' }}</h1>
+  </div>
+</div>
+
+<div class="card">
+  <div class="section-head">
+    <h3>{{ esAdmin ? 'Reporte de ventas' : 'Historial de compras' }}</h3>
+    <form class="filtros" (submit)="filtrar($event)">
+      <input type="date" name="desde" aria-label="Desde">
+      <input type="date" name="hasta" aria-label="Hasta">
+      <button type="submit" class="btn btn-outline btn-sm">Filtrar</button>
+    </form>
+  </div>
+
+  @if (mensaje()) { <p class="exito">{{ mensaje() }}</p> }
+
+  <table>
+    <tr>
+      <th>Folio</th><th>Fecha</th>
+      @if (esAdmin) { <th>Cliente</th> }
+      <th>Pago</th><th>Subtotal</th><th>IVA</th><th>Total</th><th></th>
+    </tr>
+    @for (v of ventas(); track v.id) {
+      <tr>
+        <td>{{ v.folio }}</td>
+        <td>{{ v.fecha }}</td>
+        @if (esAdmin) { <td>{{ v.cliente }}</td> }
+        <td>{{ v.metodoPago === 'paypal' ? 'PayPal' : 'Efectivo' }}</td>
+        <td>$ {{ v.subtotal.toFixed(2) }}</td>
+        <td>$ {{ v.iva.toFixed(2) }}</td>
+        <td>$ {{ v.total.toFixed(2) }}</td>
+        <td><button class="btn btn-outline btn-sm" (click)="reenviar(v.id)">Reenviar XML por correo</button></td>
+      </tr>
+    }
+  </table>
+  <div class="divider"></div>
+  <div class="section-head"><span class="muted">Total del periodo</span><h3>$ {{ total().toFixed(2) }}</h3></div>
+</div>

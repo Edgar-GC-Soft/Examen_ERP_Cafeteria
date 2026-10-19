@@ -1,0 +1,76 @@
+<div class="topbar">
+  <div>
+    <div class="eyebrow">Ventas y facturación</div>
+    <h1>Pago</h1>
+  </div>
+</div>
+
+@if (pagado()) {
+  <div class="card" style="max-width: 520px;">
+    <h3>Gracias por tu compra</h3>
+    <p class="exito" style="margin: 0.8rem 0;">{{ mensaje() }}</p>
+    <a class="btn btn-primario" routerLink="/historial">Ver mi historial</a>
+  </div>
+} @else {
+  <div class="grid grid-2">
+    <div class="card">
+      <h3 style="margin-bottom: 1rem;">Datos del comprobante</h3>
+      <div class="field">
+        <label for="nombre">Nombre</label>
+        <input id="nombre" [value]="nombre()" (input)="nombre.set($any($event.target).value)" placeholder="Nombre o razón social">
+      </div>
+      <div class="field">
+        <label for="rfc">RFC</label>
+        <input id="rfc" [value]="rfc()" (input)="rfc.set($any($event.target).value)" placeholder="GUCE010101ABC" maxlength="13">
+      </div>
+
+      <div class="divider"></div>
+      <h3 style="margin-bottom: 0.8rem;">Método de pago</h3>
+      <div class="metodos">
+        <label class="metodo">
+          <input type="radio" name="metodo" [checked]="metodo() === 'efectivo'" (change)="metodo.set('efectivo')"> Efectivo
+        </label>
+        <label class="metodo">
+          <input type="radio" name="metodo" [checked]="metodo() === 'paypal'" (change)="metodo.set('paypal')"> PayPal
+        </label>
+      </div>
+
+      @if (error()) {
+        <p class="alerta">{{ error() }}</p>
+      }
+
+      @if (metodo() === 'efectivo') {
+        <button class="btn btn-primario" style="width: 100%;" (click)="confirmarEfectivo()">Confirmar venta en efectivo</button>
+      }
+
+      <!-- el boton de PayPal siempre existe en la pagina, solo se oculta cuando se elige efectivo -->
+      <div [hidden]="metodo() !== 'paypal'">
+        <paypal-button type="pay" hidden></paypal-button>
+        <p class="muted" style="margin-top: 0.6rem;">{{ mensaje() }}</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-bottom: 1rem;">Resumen</h3>
+      @if (carrito.items().length === 0) {
+        <p class="muted">Tu carrito está vacío.</p>
+        <a class="btn btn-outline" routerLink="/ventas" style="margin-top: 0.8rem;">Ir al catálogo</a>
+      } @else {
+        <table>
+          <tr><th>Producto</th><th>Cant.</th><th>Subtotal</th></tr>
+          @for (item of carrito.items(); track item.producto.id) {
+            <tr>
+              <td>{{ item.producto.nombre }}</td>
+              <td>{{ item.cantidad }}</td>
+              <td>$ {{ (item.producto.costoVenta * item.cantidad).toFixed(2) }}</td>
+            </tr>
+          }
+        </table>
+        <div class="divider"></div>
+        <div class="section-head"><span class="muted">Subtotal</span><span>$ {{ carrito.subtotal().toFixed(2) }}</span></div>
+        <div class="section-head"><span class="muted">IVA (16%)</span><span>$ {{ carrito.iva().toFixed(2) }}</span></div>
+        <div class="section-head"><span class="muted">Total</span><h3>$ {{ carrito.total().toFixed(2) }} MXN</h3></div>
+      }
+    </div>
+  </div>
+}

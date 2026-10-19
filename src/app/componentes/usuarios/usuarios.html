@@ -16,7 +16,7 @@
         <td>{{ usuario.nombre }}</td>
         <td>{{ usuario.correo }}</td>
         <td>
-          <span class="badge" [class.badge-admin]="usuario.rol === 'Administrador'" [class.badge-cliente]="usuario.rol === 'Cliente'">
+          <span class="badge" [class.badge-admin]="usuario.rol === 'admin'" [class.badge-cliente]="usuario.rol === 'cliente'">
             {{ usuario.rol }}
           </span>
         </td>
@@ -30,26 +30,36 @@
   </table>
 </div>
 
-<div class="card">
+<form class="card" #formulario (submit)="guardar($event)">
   <h3 style="margin-bottom: 1rem;">{{ editando() ? 'Editar usuario' : 'Registrar nuevo usuario' }}</h3>
   <div class="row">
-    <div class="field"><label>Nombre</label><input [(ngModel)]="form.nombre" placeholder="Nombre completo"></div>
-    <div class="field"><label>Correo</label><input [(ngModel)]="form.correo" placeholder="correo@cafeteria.com"></div>
+    <div class="field"><label for="nombre">Nombre</label>
+      <input id="nombre" name="nombre" [value]="editando()?.nombre ?? ''" placeholder="Nombre completo" required></div>
+    <div class="field"><label for="correo">Correo</label>
+      <input id="correo" name="correo" type="email" [value]="editando()?.correo ?? ''" placeholder="correo@cafeteria.com" required></div>
   </div>
   <div class="row">
     <div class="field">
-      <label>Rol</label>
-      <select [(ngModel)]="form.rol">
-        <option>Administrador</option>
-        <option>Cliente</option>
+      <label for="rol">Rol</label>
+      <select id="rol" name="rol" [value]="editando()?.rol ?? 'cliente'">
+        <option value="admin">admin</option>
+        <option value="cliente">cliente</option>
       </select>
     </div>
-    <div class="field"><label>Salario (si aplica)</label><input [(ngModel)]="form.salario" type="number" placeholder="0.00"></div>
+    <div class="field"><label for="salario">Salario (solo administradores)</label>
+      <input id="salario" name="salario" type="number" min="0" step="0.01" [value]="editando()?.salario ?? ''" placeholder="0.00"></div>
   </div>
-  <div class="field"><label>Contraseña</label><input [(ngModel)]="form.passwordHash" type="password" placeholder="********"></div>
+  <div class="field">
+    <label for="contrasena">Contraseña {{ editando() ? '(déjala vacía para no cambiarla)' : '' }}</label>
+    <input id="contrasena" name="contrasena" type="password" minlength="6" [required]="!editando()" placeholder="********">
+  </div>
 
-  <button class="btn btn-primario" (click)="guardar()">{{ editando() ? 'Actualizar usuario' : 'Guardar usuario' }}</button>
-  @if (editando()) {
-    <button class="btn btn-outline" (click)="limpiarFormulario()">Cancelar</button>
+  @if (error()) {
+    <p class="alerta">{{ error() }}</p>
   }
-</div>
+
+  <button type="submit" class="btn btn-primario">{{ editando() ? 'Actualizar usuario' : 'Guardar usuario' }}</button>
+  @if (editando()) {
+    <button type="button" class="btn btn-outline" (click)="cancelar(formulario)">Cancelar</button>
+  }
+</form>

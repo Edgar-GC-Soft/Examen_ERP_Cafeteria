@@ -1,27 +1,21 @@
-import { Component, OnInit, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { Producto, ProductoService } from '../../servicios/producto-service';
+import { Component, OnInit, computed, signal } from '@angular/core';
+import { Producto } from '../../modelos/modelos';
+import { ProductoService } from '../../servicios/producto-service';
+import { leerFormulario, mensajeError } from '../../util/util';
 
 @Component({
   selector: 'app-inventario',
-  imports: [FormsModule],
+  imports: [],
   templateUrl: './inventario.html',
   styleUrl: './inventario.css'
 })
 export class Inventario implements OnInit {
   productos = signal<Producto[]>([]);
+  editando = signal<Producto | null>(null);
+  error = signal('');
 
-  form = {
-    id: 0,
-    nombre: '',
-    descripcion: '',
-    costoCompra: 0,
-    costoVenta: 0,
-    stock: 0,
-    imagen: ''
-  };
-
-  editando = signal(false);
+  // reporte de productos con existencia baja
+  productosBajos = computed(() => this.productos().filter((p) => this.stockBajo(p)));
 
   constructor(private productoService: ProductoService) {}
 
@@ -32,39 +26,47 @@ export class Inventario implements OnInit {
   cargarProductos(): void {
     this.productoService.obtenerProductos().subscribe({
       next: (datos) => this.productos.set(datos),
-      error: (error) => console.error('Error al obtener productos', error)
+      error: (e) => this.error.set(mensajeError(e))
     });
   }
 
-  guardar(): void {
-    if (this.editando()) {
-      this.productoService.actualizarProducto(this.form.id, this.form).subscribe({
-        next: () => { this.cargarProductos(); this.limpiarFormulario(); },
-        error: (error) => console.error('Error al actualizar producto', error)
-      });
-    } else {
-      this.productoService.agregarProducto(this.form).subscribe({
-        next: () => { this.cargarProductos(); this.limpiarFormulario(); },
-        error: (error) => console.error('Error al agregar producto', error)
-      });
-    }
+  guardar(evento: Event): void {
+    const { formulario, datos } = leerFormulario(evento);
+    const producto = {
+      nombre: datos['nombre'],
+      descripcion: datos['descripcion'],
+      costoCompra: Number(datos['costoCompra']),
+      costoVenta: Number(datos['costoVenta']),
+      stock: Number(datos['stock']),
+      imagen: datos['imagen']
+    };
+    const actual = this.editando();
+    const peticion = actual
+      ? this.productoService.actualizarProducto(actual.id, producto)
+      : this.productoService.agregarProducto(producto);
+
+    peticion.subscribe({
+      next: () => { this.cargarProductos(); this.cancelar(formulario); },
+      error: (e) => this.error.set(mensajeError(e))
+    });
   }
 
   editar(producto: Producto): void {
-    this.form = { ...producto };
-    this.editando.set(true);
+    this.editando.set(producto);
+    this.error.set('');
   }
 
   eliminar(id: number): void {
     this.productoService.eliminarProducto(id).subscribe({
       next: () => this.cargarProductos(),
-      error: (error) => console.error('Error al eliminar producto', error)
+      error: (e) => this.error.set(mensajeError(e))
     });
   }
 
-  limpiarFormulario(): void {
-    this.form = { id: 0, nombre: '', descripcion: '', costoCompra: 0, costoVenta: 0, stock: 0, imagen: '' };
-    this.editando.set(false);
+  cancelar(formulario: HTMLFormElement): void {
+    formulario.reset();
+    this.editando.set(null);
+    this.error.set('');
   }
 
   stockBajo(producto: Producto): boolean {

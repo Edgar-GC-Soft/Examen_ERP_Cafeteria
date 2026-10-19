@@ -8,36 +8,75 @@
 <div class="grid grid-2">
   <div class="card">
     <h3 style="margin-bottom: 1rem;">Nueva compra</h3>
-    <div class="field"><label>Fecha</label><input type="date"></div>
-    <div class="divider"></div>
-    <div class="row">
-      <div class="field">
-        <label>Producto</label>
-        <select>
-          <option>Leche entera 1L</option>
-          <option>Jarabe de vainilla</option>
-        </select>
-      </div>
-      <div class="field" style="max-width: 100px;"><label>Cantidad</label><input placeholder="0"></div>
-      <div class="field" style="max-width: 120px;"><label>Costo unitario</label><input placeholder="$0.00"></div>
+    <div class="field">
+      <label for="proveedor">Proveedor</label>
+      <select id="proveedor" #proveedor>
+        <option value="">Selecciona un proveedor</option>
+        @for (p of proveedores(); track p.id) {
+          <option [value]="p.id">{{ p.nombre }}</option>
+        }
+      </select>
     </div>
-    <button class="btn btn-outline btn-sm">+ Agregar a la compra</button>
+    <div class="divider"></div>
+    <form (submit)="agregarLinea($event)">
+      <div class="row">
+        <div class="field">
+          <label for="productoId">Producto</label>
+          <select id="productoId" name="productoId" required>
+            @for (p of productos(); track p.id) {
+              <option [value]="p.id">{{ p.nombre }}</option>
+            }
+          </select>
+        </div>
+        <div class="field" style="max-width: 100px;"><label for="cantidad">Cantidad</label>
+          <input id="cantidad" name="cantidad" type="number" min="1" step="1" placeholder="0" required></div>
+        <div class="field" style="max-width: 120px;"><label for="costoUnitario">Costo unitario</label>
+          <input id="costoUnitario" name="costoUnitario" type="number" min="0.01" step="0.01" placeholder="$0.00" required></div>
+      </div>
+      <button type="submit" class="btn btn-outline btn-sm">+ Agregar a la compra</button>
+    </form>
   </div>
 
   <div class="card">
     <h3 style="margin-bottom: 1rem;">Detalle de la compra</h3>
     <table>
-      <tr><th>Producto</th><th>Cant.</th><th>Subtotal</th></tr>
-      @for (item of detalle; track item.producto) {
+      <tr><th>Producto</th><th>Cant.</th><th>Subtotal</th><th></th></tr>
+      @for (item of detalle(); track $index) {
         <tr>
-          <td>{{ item.producto }}</td>
+          <td>{{ item.nombre }}</td>
           <td>{{ item.cantidad }}</td>
-          <td>$ {{ item.subtotal }}</td>
+          <td>$ {{ (item.cantidad * item.costoUnitario).toFixed(2) }}</td>
+          <td><button class="btn btn-outline btn-sm" (click)="quitarLinea($index)">Quitar</button></td>
         </tr>
       }
     </table>
     <div class="divider"></div>
-    <div class="section-head"><span class="muted">Total</span><h3>$1,560.00</h3></div>
-    <button class="btn btn-primario" style="width: 100%;">Registrar compra</button>
+    <div class="section-head"><span class="muted">Total</span><h3>$ {{ total().toFixed(2) }}</h3></div>
+
+    @if (error()) { <p class="alerta">{{ error() }}</p> }
+    @if (mensaje()) { <p class="exito">{{ mensaje() }}</p> }
+
+    <button class="btn btn-primario" style="width: 100%;" (click)="registrar(proveedor.value)">Registrar compra</button>
   </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="card">
+  <div class="section-head">
+    <h3>Reporte de compras</h3>
+    <form class="filtros" (submit)="filtrar($event)">
+      <input type="date" name="desde" aria-label="Desde">
+      <input type="date" name="hasta" aria-label="Hasta">
+      <button type="submit" class="btn btn-outline btn-sm">Filtrar</button>
+    </form>
+  </div>
+  <table>
+    <tr><th>#</th><th>Fecha</th><th>Proveedor</th><th>Total</th></tr>
+    @for (c of compras(); track c.id) {
+      <tr><td>{{ c.id }}</td><td>{{ c.fecha }}</td><td>{{ c.proveedor }}</td><td>$ {{ c.total.toFixed(2) }}</td></tr>
+    }
+  </table>
+  <div class="divider"></div>
+  <div class="section-head"><span class="muted">Total del periodo</span><h3>$ {{ totalReporte().toFixed(2) }}</h3></div>
 </div>

@@ -1,26 +1,18 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms'; // aqui se importa para usar [(ngModel)]
-import { Usuario, UsuarioService } from '../../servicios/usuario-service';
+import { Usuario } from '../../modelos/modelos';
+import { UsuarioService } from '../../servicios/usuario-service';
+import { leerFormulario, mensajeError } from '../../util/util';
 
 @Component({
   selector: 'app-usuarios',
-  imports: [FormsModule],
+  imports: [],
   templateUrl: './usuarios.html',
   styleUrl: './usuarios.css'
 })
 export class Usuarios implements OnInit {
   usuarios = signal<Usuario[]>([]); // aqui se guarda la lista que viene del backend
-
-  form = {
-    id: 0,
-    nombre: '',
-    correo: '',
-    passwordHash: '',
-    rol: 'Administrador',
-    salario: null as number | null
-  };
-
-  editando = signal(false); // aqui se sabe si el formulario esta editando o creando
+  editando = signal<Usuario | null>(null); // usuario que se esta editando (null = nuevo)
+  error = signal('');
 
   constructor(private usuarioService: UsuarioService) {}
 
@@ -31,38 +23,45 @@ export class Usuarios implements OnInit {
   cargarUsuarios(): void {
     this.usuarioService.obtenerUsuarios().subscribe({
       next: (datos) => this.usuarios.set(datos),
-      error: (error) => console.error('Error al obtener usuarios', error)
+      error: (e) => this.error.set(mensajeError(e))
     });
   }
 
-  guardar(): void {
-    if (this.editando()) {
-      this.usuarioService.actualizarUsuario(this.form.id, this.form).subscribe({
-        next: () => { this.cargarUsuarios(); this.limpiarFormulario(); },
-        error: (error) => console.error('Error al actualizar usuario', error)
-      });
-    } else {
-      this.usuarioService.agregarUsuario(this.form).subscribe({
-        next: () => { this.cargarUsuarios(); this.limpiarFormulario(); },
-        error: (error) => console.error('Error al agregar usuario', error)
-      });
-    }
+  guardar(evento: Event): void {
+    const { formulario, datos } = leerFormulario(evento);
+    const usuario = {
+      nombre: datos['nombre'],
+      correo: datos['correo'],
+      rol: datos['rol'],
+      salario: datos['salario'] === '' ? null : Number(datos['salario']),
+      contrasena: datos['contrasena']
+    };
+    const actual = this.editando();
+    const peticion = actual
+      ? this.usuarioService.actualizarUsuario(actual.id, usuario)
+      : this.usuarioService.agregarUsuario(usuario);
+
+    peticion.subscribe({
+      next: () => { this.cargarUsuarios(); this.cancelar(formulario); },
+      error: (e) => this.error.set(mensajeError(e))
+    });
   }
 
   editar(usuario: Usuario): void {
-    this.form = { ...usuario }; // aqui se copian los datos de la fila al formulario
-    this.editando.set(true);
+    this.editando.set(usuario); // aqui se copian los datos de la fila al formulario
+    this.error.set('');
   }
 
   eliminar(id: number): void {
     this.usuarioService.eliminarUsuario(id).subscribe({
       next: () => this.cargarUsuarios(),
-      error: (error) => console.error('Error al eliminar usuario', error)
+      error: (e) => this.error.set(mensajeError(e))
     });
   }
 
-  limpiarFormulario(): void {
-    this.form = { id: 0, nombre: '', correo: '', passwordHash: '', rol: 'Administrador', salario: null };
-    this.editando.set(false);
+  cancelar(formulario: HTMLFormElement): void {
+    formulario.reset();
+    this.editando.set(null);
+    this.error.set('');
   }
 }

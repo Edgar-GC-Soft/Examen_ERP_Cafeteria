@@ -5,15 +5,61 @@
   </div>
 </div>
 
+<div class="grid grid-4" style="margin-bottom: 1.5rem;">
+  <div class="card"><div class="stat-label">Ingresos</div><div class="stat-num" style="color: var(--color-exito);">$ {{ ingresos().toFixed(2) }}</div></div>
+  <div class="card"><div class="stat-label">Egresos</div><div class="stat-num" style="color: var(--color-peligro);">$ {{ egresos().toFixed(2) }}</div></div>
+  <div class="card"><div class="stat-label">Balance</div><div class="stat-num">$ {{ balance().toFixed(2) }}</div></div>
+  <div class="card">
+    <div class="stat-label">Reporte por origen</div>
+    @for (o of porOrigen(); track o.origen) {
+      <div class="muted">{{ o.origen }}: $ {{ o.total.toFixed(2) }}</div>
+    }
+  </div>
+</div>
+
+<div class="card" style="margin-bottom: 1.5rem;">
+  <h3 style="margin-bottom: 1rem;">Ingresos vs egresos</h3>
+  <div class="barra-fila"><span>Ingresos</span>
+    <div class="barra"><div class="barra-relleno ingreso" [style.width.%]="ingresos() / maximo() * 100"></div></div></div>
+  <div class="barra-fila"><span>Egresos</span>
+    <div class="barra"><div class="barra-relleno egreso" [style.width.%]="egresos() / maximo() * 100"></div></div></div>
+</div>
+
 <div class="card">
   <div class="section-head">
     <h3>Historial de transacciones</h3>
-    <button class="btn btn-primario btn-sm">Exportar reporte</button>
+    <div class="no-imprimir" style="display: flex; gap: 0.5rem;">
+      <button class="btn btn-outline btn-sm" (click)="descargarXml()">Descargar XML</button>
+      <button class="btn btn-primario btn-sm" (click)="exportarPdf()">Exportar PDF</button>
+    </div>
   </div>
+
+  <form class="filtros no-imprimir" #formulario (submit)="filtrar($event)" style="margin-bottom: 1rem;">
+    <input type="date" name="desde" aria-label="Desde">
+    <input type="date" name="hasta" aria-label="Hasta">
+    <select name="tipo" aria-label="Tipo">
+      <option value="">Todos los tipos</option>
+      <option value="Ingreso">Ingreso</option>
+      <option value="Egreso">Egreso</option>
+    </select>
+    <select name="origen" aria-label="Origen">
+      <option value="">Todos los orígenes</option>
+      <option value="Venta">Venta</option>
+      <option value="Compra">Compra</option>
+      <option value="Nómina">Nómina</option>
+    </select>
+    <input name="buscar" placeholder="Buscar concepto o número" aria-label="Buscar">
+    <button type="submit" class="btn btn-outline btn-sm">Filtrar</button>
+    <button type="button" class="btn btn-outline btn-sm" (click)="limpiar(formulario)">Limpiar</button>
+  </form>
+
+  @if (error()) { <p class="alerta">{{ error() }}</p> }
+
   <table>
-    <tr><th>Fecha</th><th>Tipo</th><th>Concepto</th><th>Origen</th><th>Monto</th></tr>
-    @for (t of transacciones; track t.concepto) {
+    <tr><th>#</th><th>Fecha</th><th>Tipo</th><th>Concepto</th><th>Origen</th><th>Monto</th></tr>
+    @for (t of transacciones(); track t.id) {
       <tr>
+        <td>{{ t.id }}</td>
         <td>{{ t.fecha }}</td>
         <td>
           @if (t.tipo === 'Ingreso') {
@@ -24,7 +70,7 @@
         </td>
         <td>{{ t.concepto }}</td>
         <td>{{ t.origen }}</td>
-        <td>$ {{ t.monto }}</td>
+        <td>$ {{ t.monto.toFixed(2) }}</td>
       </tr>
     }
   </table>

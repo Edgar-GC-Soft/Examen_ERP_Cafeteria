@@ -5,39 +5,61 @@
   </div>
 </div>
 
+@if (error()) { <p class="alerta">{{ error() }}</p> }
+@if (mensaje()) { <p class="exito">{{ mensaje() }}</p> }
+
 <div class="grid grid-2">
   <div class="card">
     <div class="section-head">
-      <h3>Asistencia de hoy</h3>
+      <h3>Asistencia</h3>
     </div>
     <table>
-      <tr><th>Administrador</th><th>Llegada</th><th>Salida</th></tr>
-      @for (a of asistencias; track a.nombre) {
+      <tr><th>Administrador</th><th>Llegada</th><th>Salida</th><th>Horas</th></tr>
+      @for (a of asistencias(); track a.id) {
         <tr>
           <td>{{ a.nombre }}</td>
-          <td>{{ a.llegada }}</td>
-          <td>{{ a.salida }}</td>
+          <td>{{ a.horaLlegada }}</td>
+          <td>{{ a.horaSalida ?? '-' }}</td>
+          <td>{{ a.horasTrabajadas ?? '-' }}</td>
         </tr>
       }
     </table>
     <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-      <button class="btn btn-outline btn-sm">Registrar llegada</button>
-      <button class="btn btn-outline btn-sm">Registrar salida</button>
+      <button class="btn btn-outline btn-sm" (click)="registrarLlegada()">Registrar llegada</button>
+      <button class="btn btn-outline btn-sm" (click)="registrarSalida()">Registrar salida</button>
     </div>
   </div>
 
   <div class="card">
     <div class="section-head">
       <h3>Nómina</h3>
-      <button class="btn btn-primario btn-sm">+ Registrar pago</button>
     </div>
+    <form (submit)="pagarNomina($event)">
+      <div class="row">
+        <div class="field">
+          <label for="administradorId">Administrador</label>
+          <select id="administradorId" name="administradorId" required (change)="elegirAdministrador($any($event.target).value)">
+            <option value="">Selecciona</option>
+            @for (a of administradores(); track a.id) {
+              <option [value]="a.id">{{ a.nombre }}</option>
+            }
+          </select>
+        </div>
+        <div class="field">
+          <label for="monto">Monto</label>
+          <input id="monto" name="monto" type="number" min="0.01" step="0.01" [value]="montoSugerido()" required>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primario btn-sm">+ Registrar pago</button>
+    </form>
+    <div class="divider"></div>
     <table>
       <tr><th>Administrador</th><th>Fecha de pago</th><th>Monto</th></tr>
-      @for (n of nominas; track n.nombre) {
+      @for (n of nominas(); track n.id) {
         <tr>
           <td>{{ n.nombre }}</td>
           <td>{{ n.fechaPago }}</td>
-          <td>$ {{ n.monto }}</td>
+          <td>$ {{ n.monto.toFixed(2) }}</td>
         </tr>
       }
     </table>

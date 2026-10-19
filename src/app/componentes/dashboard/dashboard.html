@@ -1,39 +1,41 @@
 <div class="topbar">
   <div>
     <div class="eyebrow">Panel general</div>
-    <h1>Bienvenido, Administrador</h1>
+    <h1>Bienvenido, {{ nombre }}</h1>
   </div>
 </div>
 
-<div class="grid grid-4" style="margin-bottom: 1.5rem;">
-  <div class="card">
-    <div class="stat-label">Ventas de hoy</div>
-    <div class="stat-num">$4,280</div>
-    <div class="muted">18 ventas registradas</div>
+@if (resumen(); as r) {
+  <div class="grid grid-4" style="margin-bottom: 1.5rem;">
+    <div class="card">
+      <div class="stat-label">Ventas de hoy</div>
+      <div class="stat-num">$ {{ r.ventasHoy.toFixed(2) }}</div>
+      <div class="muted">{{ r.numVentasHoy }} ventas registradas</div>
+    </div>
+    <div class="card">
+      <div class="stat-label">Productos con stock bajo</div>
+      <div class="stat-num" style="color: var(--color-peligro);">{{ r.stockBajo }}</div>
+      <div class="muted">Requieren reabastecer</div>
+    </div>
+    <div class="card">
+      <div class="stat-label">Compras del mes</div>
+      <div class="stat-num">$ {{ r.comprasMes.toFixed(2) }}</div>
+      <div class="muted">{{ r.numComprasMes }} compras registradas</div>
+    </div>
+    <div class="card">
+      <div class="stat-label">Último pago de nómina</div>
+      <div class="stat-num">{{ r.ultimoPagoNomina ? r.ultimoPagoNomina.substring(0, 10) : '-' }}</div>
+      <div class="muted">{{ r.administradores }} administradores</div>
+    </div>
   </div>
-  <div class="card">
-    <div class="stat-label">Productos con stock bajo</div>
-    <div class="stat-num" style="color: var(--color-peligro);">3</div>
-    <div class="muted">Requieren reabastecer</div>
-  </div>
-  <div class="card">
-    <div class="stat-label">Compras del mes</div>
-    <div class="stat-num">$12,450</div>
-    <div class="muted">7 órdenes registradas</div>
-  </div>
-  <div class="card">
-    <div class="stat-label">Próximo pago de nómina</div>
-    <div class="stat-num">15 Sep</div>
-    <div class="muted">6 administradores</div>
-  </div>
-</div>
+}
 
 <div class="card">
   <div class="section-head">
     <h3>Accesos rápidos</h3>
   </div>
   <div class="grid grid-4">
-    <a class="btn btn-outline" routerLink="/ventas">Ver ventas</a>
+    <a class="btn btn-outline" routerLink="/ventas">Registrar venta</a>
     <a class="btn btn-outline" routerLink="/compras">Registrar compra</a>
     <a class="btn btn-outline" routerLink="/inventario">Ver inventario</a>
     <a class="btn btn-outline" routerLink="/rh">Recursos humanos</a>

@@ -1,0 +1,51 @@
+<div class="topbar">
+  <div>
+    <div class="eyebrow">Compras y proveedores</div>
+    <h1>Proveedores</h1>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom: 1.3rem;">
+  <div class="section-head">
+    <h3>Catálogo de proveedores</h3>
+  </div>
+  <table>
+    <tr><th>Nombre</th><th>Contacto</th><th>Teléfono</th><th>Correo</th><th></th></tr>
+    @for (proveedor of proveedores(); track proveedor.id) {
+      <tr>
+        <td>{{ proveedor.nombre }}</td>
+        <td>{{ proveedor.contacto }}</td>
+        <td>{{ proveedor.telefono }}</td>
+        <td>{{ proveedor.correo }}</td>
+        <td><button class="btn btn-outline btn-sm" (click)="editar(proveedor)">Editar</button></td>
+      </tr>
+    }
+  </table>
+</div>
+
+<form class="card" #formulario (submit)="guardar($event)">
+  <h3 style="margin-bottom: 1rem;">{{ editando() ? 'Editar proveedor' : 'Registrar proveedor' }}</h3>
+  <div class="row">
+    <div class="field"><label for="nombre">Nombre</label>
+      <input id="nombre" name="nombre" [value]="editando()?.nombre ?? ''" required></div>
+    <div class="field"><label for="contacto">Contacto</label>
+      <input id="contacto" name="contacto" [value]="editando()?.contacto ?? ''"></div>
+  </div>
+  <div class="row">
+    <div class="field"><label for="telefono">Teléfono</label>
+      <input id="telefono" name="telefono" [value]="editando()?.telefono ?? ''"></div>
+    <div class="field"><label for="correo">Correo</label>
+      <input id="correo" name="correo" type="email" [value]="editando()?.correo ?? ''"></div>
+  </div>
+  <div class="field"><label for="direccion">Dirección</label>
+    <input id="direccion" name="direccion" [value]="editando()?.direccion ?? ''"></div>
+
+  @if (error()) {
+    <p class="alerta">{{ error() }}</p>
+  }
+
+  <button type="submit" class="btn btn-primario">{{ editando() ? 'Actualizar proveedor' : 'Guardar proveedor' }}</button>
+  @if (editando()) {
+    <button type="button" class="btn btn-outline" (click)="cancelar(formulario)">Cancelar</button>
+  }
+</form>

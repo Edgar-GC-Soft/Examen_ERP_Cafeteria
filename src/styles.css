@@ -179,3 +179,55 @@ label {
 }
 
 .stat-label { font-size: 0.8rem; color: var(--color-texto-suave); }
+/* mensajes */
+.alerta {
+  background: rgba(178, 58, 46, 0.1);
+  color: var(--color-peligro);
+  padding: 0.6rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  margin-bottom: 0.9rem;
+}
+
+.exito {
+  background: rgba(79, 121, 66, 0.12);
+  color: var(--color-exito);
+  padding: 0.6rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  margin-bottom: 0.9rem;
+}
+
+/* filtros */
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.filtros input,
+.filtros select {
+  width: auto;
+}
+
+/* grafica de barras */
+.barra-fila {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 0.6rem;
+  font-size: 0.85rem;
+}
+
+.barra-fila span { width: 70px; }
+.barra { flex: 1; background: #f0e9e0; border-radius: 4px; height: 18px; overflow: hidden; }
+.barra-relleno { height: 100%; }
+.barra-relleno.ingreso { background: var(--color-exito); }
+.barra-relleno.egreso { background: var(--color-peligro); }
+
+/* al imprimir (Exportar PDF) solo se muestra el contenido */
+@media print {
+  .menu, .pie, .no-imprimir { display: none !important; }
+  .layout { display: block; }
+}

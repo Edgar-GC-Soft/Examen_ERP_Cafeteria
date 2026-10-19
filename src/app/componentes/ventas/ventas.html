@@ -9,57 +9,45 @@
   <div class="card">
     <h3 style="margin-bottom: 1rem;">Catálogo de productos</h3>
     <div class="grid grid-2">
-      
       @for (producto of productos(); track producto.id) {
         <!-- aqui se recorre el arreglo productos -->
         <app-producto-card
           [nombre]="producto.nombre"
           [precio]="producto.costoVenta"
-          [imagen]="producto.imagen">
-    <!-- aqui se manda la informacion al componente producto-card -->
-  </app-producto-card>
-}
+          [imagen]="producto.imagen"
+          [stock]="producto.stock"
+          (agregar)="carrito.agregar(producto)">
+          <!-- aqui se manda la informacion al componente producto-card -->
+        </app-producto-card>
+      }
     </div>
   </div>
 
   <div class="card">
-    <h3 style="margin-bottom: 1rem;">Detalle de la venta</h3>
-    <table>
-      <tr><th>Producto</th><th>Cant.</th><th>Subtotal</th></tr>
-      @for (item of detalle; track item.producto) {
-        <!-- aqui se recorre el arreglo detalle de ventas.ts -->
-        <tr>
-          <td>{{ item.producto }}</td>
-          <!-- aqui se muestra el producto del detalle -->
-          <td>{{ item.cantidad }}</td>
-          <!-- aqui se muestra la cantidad del detalle -->
-          <td>$ {{ item.subtotal }}</td>
-          <!-- aqui se muestra el subtotal del detalle -->
-        </tr>
-      }
-    </table>
-    <div class="divider"></div>
-    <div class="field">
-      <label>Método de pago</label>
-      <select>
-        <option>Efectivo</option>
-        <option>Tarjeta</option>
-        <option>Transferencia</option>
-      </select>
-    </div>
-    <div class="section-head"><span class="muted">Total</span><h3>$128.00</h3></div>
-    <button class="btn btn-primario" style="width: 100%;">Generar factura</button>
+    <h3 style="margin-bottom: 1rem;">Carrito</h3>
+    @if (carrito.items().length === 0) {
+      <p class="muted">Aún no agregas productos.</p>
+    } @else {
+      <table>
+        <tr><th>Producto</th><th>Cant.</th><th>Subtotal</th><th></th></tr>
+        @for (item of carrito.items(); track item.producto.id) {
+          <tr>
+            <td>{{ item.producto.nombre }}</td>
+            <td>
+              <button class="btn btn-outline btn-sm" aria-label="Quitar uno" (click)="carrito.cambiarCantidad(item.producto.id, -1)">-</button>
+              {{ item.cantidad }}
+              <button class="btn btn-outline btn-sm" aria-label="Agregar uno" (click)="carrito.cambiarCantidad(item.producto.id, 1)">+</button>
+            </td>
+            <td>$ {{ (item.producto.costoVenta * item.cantidad).toFixed(2) }}</td>
+            <td><button class="btn btn-outline btn-sm" (click)="carrito.quitar(item.producto.id)">Quitar</button></td>
+          </tr>
+        }
+      </table>
+      <div class="divider"></div>
+      <div class="section-head"><span class="muted">Subtotal</span><span>$ {{ carrito.subtotal().toFixed(2) }}</span></div>
+      <div class="section-head"><span class="muted">IVA (16%)</span><span>$ {{ carrito.iva().toFixed(2) }}</span></div>
+      <div class="section-head"><span class="muted">Total</span><h3>$ {{ carrito.total().toFixed(2) }}</h3></div>
+      <button class="btn btn-primario" style="width: 100%;" (click)="irAPagar()">Continuar al pago</button>
+    }
   </div>
-</div>
-
-<div class="divider"></div>
-
-<div class="card" style="max-width: 480px;">
-  <div class="section-head">
-    <h3>Factura generada</h3>
-    <span class="badge badge-ok">Emitida</span>
-  </div>
-  <p class="muted">Folio: FAC-000482 · 03/09/2026</p>
-  <p class="muted" style="margin-bottom: 1rem;">Total: $128.00</p>
-  <button class="btn btn-primario">Descargar factura XML</button>
 </div>
