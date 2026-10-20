@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const { consultar } = require('./config/db');
 
 const usuarios = [
-    { nombre: 'Edgar', correo: 'administrador@cafeteria.com', contrasena: 'admin123', rol: 'admin', salario: 9500 },
+    { nombre: 'Edgar', correo: 'egutierrezcorona@gmail.com', contrasena: 'admin123', rol: 'admin', salario: 9500 },
     { nombre: 'Edgar', correo: 'a23300758@ceti.mx', contrasena: 'test123', rol: 'cliente', salario: null },
     { nombre: 'Ruben', correo: 'cliente@cafeteria.com', contrasena: 'cliente123', rol: 'cliente', salario: null }
 ];

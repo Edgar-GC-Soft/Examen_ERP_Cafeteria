@@ -25,3 +25,11 @@
   padding: 1.25rem;
   font-size: 0.85rem;
 }
+
+.pie-enlaces {
+  margin-top: 0.4rem;
+}
+
+.pie-enlaces a {
+  color: #ecf0f1;
+}

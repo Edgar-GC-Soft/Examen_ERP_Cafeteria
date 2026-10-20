@@ -1,11 +1,22 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, computed, effect, signal } from '@angular/core';
 import { ItemCarrito, Producto, ProductoCarrito } from '../modelos/modelos';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CarritoService {
-  items = signal<ItemCarrito[]>([]);
+  items = signal<ItemCarrito[]>(this.leer());
+
+  // el carrito se guarda en el navegador porque al ir a PayPal la pagina se recarga
+  constructor() {
+    effect(() => {
+      try { localStorage.setItem('carrito', JSON.stringify(this.items())); } catch { /* sin almacenamiento */ }
+    });
+  }
+
+  private leer(): ItemCarrito[] {
+    try { return JSON.parse(localStorage.getItem('carrito') ?? '[]'); } catch { return []; }
+  }
 
   // solo para mostrar: el backend vuelve a calcular todo con los precios de la BD
   subtotal = computed(() =>

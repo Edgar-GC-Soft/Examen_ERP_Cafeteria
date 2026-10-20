@@ -66,6 +66,7 @@ export interface DatosFiscales {
 export interface OrdenPayPal {
   id: string;
   total: number;
+  urlPago: string; // pagina de PayPal a la que se redirige al cliente
 }
 
 export interface ResultadoPago {

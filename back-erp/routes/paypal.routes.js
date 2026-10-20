@@ -10,15 +10,31 @@ router.post('/orden', async (req, res) => {
         // recibir los productos, consultar precios en la bd, calcular el total y guardar la venta (CREADA)
         const { ventaId, total } = await ventaService.crearVenta(req.usuario.id, { ...req.body, metodoPago: 'paypal' });
 
-        // crear orden mediante PayPal
+        // crear orden mediante PayPal; experience_context hace que el cliente sea redirigido a la pagina de PayPal
+        const frontend = process.env.FRONTEND_URL || 'http://localhost:4200';
         const orden = await paypalRequest('/v2/checkout/orders', 'POST', {
             intent: 'CAPTURE',
-            purchase_units: [{ amount: { currency_code: 'MXN', value: total.toFixed(2) } }]
+            purchase_units: [{ amount: { currency_code: 'MXN', value: total.toFixed(2) } }],
+            payment_source: {
+                paypal: {
+                    experience_context: {
+                        brand_name: 'ERP Cafetería',
+                        user_action: 'PAY_NOW',
+                        shipping_preference: 'NO_SHIPPING',
+                        return_url: `${frontend}/pago-paypal`, // PayPal regresa aqui con ?token=ID_DE_ORDEN
+                        cancel_url: `${frontend}/checkout`
+                    }
+                }
+            }
         });
         await consultar('UPDATE ventas SET paypal_order_id = ? WHERE id = ?', [orden.id, ventaId]);
 
-        // devolver el id de la orden
-        res.json({ id: orden.id, total });
+        // liga de la pagina de PayPal donde el cliente inicia sesion y paga
+        const liga = orden.links.find((l) => l.rel === 'payer-action');
+        if (!liga) {
+            throw new Error('PayPal no devolvio la liga de pago');
+        }
+        res.json({ id: orden.id, total, urlPago: liga.href });
     } catch (error) {
         if (error.status) throw error; // errores de validacion (400, 409...)
         console.error(error);

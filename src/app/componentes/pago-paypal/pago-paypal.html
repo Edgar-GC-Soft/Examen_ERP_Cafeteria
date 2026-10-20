@@ -1,0 +1,19 @@
+<div class="topbar">
+  <div>
+    <div class="eyebrow">Ventas y facturación</div>
+    <h1>Pago con PayPal</h1>
+  </div>
+</div>
+
+<div class="card" style="max-width: 520px;">
+  @if (procesando()) {
+    <p class="muted">Confirmando tu pago con PayPal...</p>
+  } @else if (exito()) {
+    <h3>Gracias por tu compra</h3>
+    <p class="exito" style="margin: 0.8rem 0;">{{ mensaje() }}</p>
+    <a class="btn btn-primario" routerLink="/historial">Ver mi historial</a>
+  } @else {
+    <p class="alerta">{{ mensaje() }}</p>
+    <a class="btn btn-outline" routerLink="/checkout">Volver al pago</a>
+  }
+</div>

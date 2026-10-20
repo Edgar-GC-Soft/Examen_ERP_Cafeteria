@@ -11,6 +11,9 @@ import { Checkout } from './componentes/checkout/checkout';
 import { Historial } from './componentes/historial/historial';
 import { Contabilidad } from './componentes/contabilidad/contabilidad';
 import { Rh } from './componentes/rh/rh';
+import { PagoPaypal } from './componentes/pago-paypal/pago-paypal';
+import { Terminos } from './componentes/terminos/terminos';
+import { Privacidad } from './componentes/privacidad/privacidad';
 import { authGuard } from './guard/auth-guard';
 import { roleGuard } from './guard/role-guard';
 
@@ -20,6 +23,8 @@ export const routes: Routes = [
   // rutas publicas
   { path: 'login', component: Login },
   { path: 'sin-acceso', component: SinAcceso },
+  { path: 'terminos', component: Terminos },
+  { path: 'privacidad', component: Privacidad },
 
   // rutas protegidas: primero revisa la sesion y luego el rol
   // solo administrador
@@ -34,6 +39,7 @@ export const routes: Routes = [
   // administrador y cliente
   { path: 'ventas', component: Ventas, canActivate: [authGuard, roleGuard], data: { roles: ['admin', 'cliente'] } },
   { path: 'checkout', component: Checkout, canActivate: [authGuard, roleGuard], data: { roles: ['admin', 'cliente'] } },
+  { path: 'pago-paypal', component: PagoPaypal, canActivate: [authGuard, roleGuard], data: { roles: ['admin', 'cliente'] } },
   { path: 'historial', component: Historial, canActivate: [authGuard, roleGuard], data: { roles: ['admin', 'cliente'] } },
 
   // cualquier otra ruta

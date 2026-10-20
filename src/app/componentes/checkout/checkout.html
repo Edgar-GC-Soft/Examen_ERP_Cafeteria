@@ -35,19 +35,26 @@
         </label>
       </div>
 
+      <label class="metodo" style="margin-bottom: 1rem; align-items: flex-start;">
+        <input type="checkbox" [checked]="acepto()" (change)="acepto.set($any($event.target).checked)">
+        <span>Acepto los <a routerLink="/terminos" target="_blank">términos y condiciones</a>
+          y el <a routerLink="/privacidad" target="_blank">aviso de privacidad</a></span>
+      </label>
+
       @if (error()) {
         <p class="alerta">{{ error() }}</p>
       }
 
       @if (metodo() === 'efectivo') {
-        <button class="btn btn-primario" style="width: 100%;" (click)="confirmarEfectivo()">Confirmar venta en efectivo</button>
+        <button class="btn btn-primario" style="width: 100%;" [disabled]="cargando()" (click)="confirmarEfectivo()">
+          Confirmar venta en efectivo
+        </button>
+      } @else {
+        <button class="btn btn-primario" style="width: 100%;" [disabled]="cargando()" (click)="pagarConPaypal()">
+          {{ cargando() ? 'Redirigiendo a PayPal...' : 'Pagar con PayPal' }}
+        </button>
+        <p class="muted" style="margin-top: 0.6rem;">Te llevaremos a la página de PayPal para iniciar sesión y pagar.</p>
       }
-
-      <!-- el boton de PayPal siempre existe en la pagina, solo se oculta cuando se elige efectivo -->
-      <div [hidden]="metodo() !== 'paypal'">
-        <paypal-button type="pay" hidden></paypal-button>
-        <p class="muted" style="margin-top: 0.6rem;">{{ mensaje() }}</p>
-      </div>
     </div>
 
     <div class="card">
