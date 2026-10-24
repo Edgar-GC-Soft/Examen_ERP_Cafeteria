@@ -1,19 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const proveedorService = require('../services/proveedor.service');
+const controlador = require('../controlador/proveedor.controlador');
 
-router.get('/', async (req, res) => {
-    res.json(await proveedorService.obtenerProveedores());
-});
-
-router.post('/', async (req, res) => {
-    const id = await proveedorService.agregarProveedor(req.body);
-    res.status(201).json({ mensaje: 'Proveedor agregado', id });
-});
-
-router.put('/:id', async (req, res) => {
-    await proveedorService.actualizarProveedor(req.params.id, req.body);
-    res.json({ mensaje: 'Proveedor actualizado' });
-});
+router.get('/', controlador.obtenerProveedores);
+router.post('/', controlador.agregarProveedor);
+router.put('/:id', controlador.actualizarProveedor);
 
 module.exports = router;

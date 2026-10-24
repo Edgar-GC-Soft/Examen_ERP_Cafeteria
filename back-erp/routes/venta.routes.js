@@ -1,26 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const ventaService = require('../services/venta.service');
-const correoService = require('../services/correo.service');
+const controlador = require('../controlador/venta.controlador');
 
-// POST /api/ventas: venta en efectivo (la de PayPal esta en paypal.routes.js)
-router.post('/', async (req, res) => {
-    const { ventaId } = await ventaService.crearVenta(req.usuario.id, { ...req.body, metodoPago: 'efectivo' });
-    const datos = await ventaService.completarVenta(ventaId);
-    const correoEnviado = await correoService.enviarRecibo(datos); // el XML se manda por correo
-    res.status(201).json({ mensaje: 'Venta registrada', folio: datos.factura.folio, total: datos.venta.total, correoEnviado });
-});
-
-// GET /api/ventas?desde=&hasta=: historial
-router.get('/', async (req, res) => {
-    res.json(await ventaService.obtenerVentas(req.usuario, req.query.desde, req.query.hasta));
-});
-
-// POST /api/ventas/:id/reenviar: vuelve a mandar el comprobante por correo
-router.post('/:id/reenviar', async (req, res) => {
-    const datos = await ventaService.obtenerComprobante(req.params.id, req.usuario);
-    const correoEnviado = await correoService.enviarRecibo(datos);
-    res.json({ correoEnviado });
-});
+router.post('/', controlador.registrarVentaEfectivo);
+router.get('/', controlador.obtenerVentas);
+router.post('/:id/reenviar', controlador.reenviarComprobante);
 
 module.exports = router;

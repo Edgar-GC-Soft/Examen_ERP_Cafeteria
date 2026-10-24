@@ -1,9 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const dashboardService = require('../services/dashboard.service');
+const controlador = require('../controlador/dashboard.controlador');
 
-router.get('/', async (req, res) => {
-    res.json(await dashboardService.obtenerResumen());
-});
+router.get('/', controlador.obtenerResumen);
 
 module.exports = router;

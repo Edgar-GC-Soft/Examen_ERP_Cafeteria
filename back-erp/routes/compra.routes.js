@@ -1,15 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const compraService = require('../services/compra.service');
+const controlador = require('../controlador/compra.controlador');
 
-// GET /api/compras?desde=2026-10-01&hasta=2026-10-31
-router.get('/', async (req, res) => {
-    res.json(await compraService.obtenerCompras(req.query.desde, req.query.hasta));
-});
-
-router.post('/', async (req, res) => {
-    const compra = await compraService.registrarCompra(req.usuario.id, req.body);
-    res.status(201).json({ mensaje: 'Compra registrada', ...compra });
-});
+router.get('/', controlador.obtenerCompras);
+router.post('/', controlador.registrarCompra);
 
 module.exports = router;

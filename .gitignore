@@ -49,3 +49,5 @@ Thumbs.db
 
 /back-erp/.env
 /back-erp/.env.example
+/database/env
+/database/*
