@@ -5,10 +5,10 @@ const { consultar } = require('../config/db');
 
 async function crearOrden(req, res) {
     try {
-        // recibir los productos, consultar precios en la bd, calcular el total y guardar la venta (CREADA)
+        console.log('0. llego la peticion, usuario', req.usuario?.id, 'productos:', JSON.stringify(req.body.productos));
         const { ventaId, total } = await ventaService.crearVenta(req.usuario.id, { ...req.body, metodoPago: 'paypal' });
+        console.log('1. venta creada', ventaId, 'total', total);
 
-        // crear orden mediante PayPal; experience_context hace que el cliente sea redirigido a la pagina de PayPal
         const frontend = process.env.FRONTEND_URL || 'http://localhost:4200';
         const orden = await paypalRequest('/v2/checkout/orders', 'POST', {
             intent: 'CAPTURE',
@@ -19,14 +19,15 @@ async function crearOrden(req, res) {
                         brand_name: 'ERP Cafetería',
                         user_action: 'PAY_NOW',
                         shipping_preference: 'NO_SHIPPING',
-                        return_url: `${frontend}/pago-paypal`, // PayPal regresa aqui con ?token=ID_DE_ORDEN
+                        return_url: `${frontend}/pago-paypal`,
                         cancel_url: `${frontend}/checkout`
                     }
                 }
             }
         });
+        console.log('2. PayPal respondio', orden.id);
         await consultar('UPDATE ventas SET paypal_order_id = ? WHERE id = ?', [orden.id, ventaId]);
-
+        console.log('3. orden guardada');
         // liga de la pagina de PayPal donde el cliente inicia sesion y paga
         const liga = orden.links.find((l) => l.rel === 'payer-action');
         if (!liga) {

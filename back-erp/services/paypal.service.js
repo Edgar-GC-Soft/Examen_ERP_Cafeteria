@@ -12,7 +12,8 @@ async function obtenerToken() {
             'Authorization': `Basic ${credenciales}`,
             'Content-Type': 'application/x-www-form-urlencoded'
         },
-        body: 'grant_type=client_credentials'
+        body: 'grant_type=client_credentials',
+        signal: AbortSignal.timeout(15000),
     });
 
     const datos = await respuesta.json();
@@ -32,7 +33,8 @@ async function paypalRequest(ruta, metodo, body) {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
         },
-        ...(body !== undefined ? { body: JSON.stringify(body) } : {})
+        ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+        signal: AbortSignal.timeout(15000),
     });
 
     const datos = await respuesta.json();

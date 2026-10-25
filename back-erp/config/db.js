@@ -29,7 +29,12 @@ async function transaccion(trabajo) {
         await conexion.commit();
         return resultado;
     } catch (error) {
-        await conexion.rollback();
+        console.error('Error dentro de la transaccion:', error.code, error.message);
+        try {
+            await conexion.rollback();
+        } catch (_) {
+            // si la conexion ya se cerro, no hay nada que deshacer; se conserva el error original
+        }
         throw error;
     } finally {
         conexion.release();
