@@ -16,6 +16,7 @@ export class Login {
   constructor(private authService: AuthService, private router: Router) {}
 
   iniciarSesion(event: Event) {
+    // evita recargar la pagina al enviar el formulario
     event.preventDefault();
     const form = event.target as HTMLFormElement;
     const datos = new FormData(form);
@@ -27,15 +28,15 @@ export class Login {
 
     this.cargando.set(true);
 
+    // envia las credenciales y guarda la sesion si son validas
     this.authService.login(credenciales).subscribe({
       next: (respuesta) => {
-        // guardar el token y los datos del usuario
         this.authService.guardarSesion(respuesta);
 
-        // mensaje para el tipo de persona que entra: "Hola Edgar, administrador"
+        // muestra un saludo con el rol del usuario
         this.bienvenida.set(`Hola ${respuesta.nombre}, ${this.authService.textoRol(respuesta.rol)}`);
 
-        // el administrador va al dashboard y el cliente a la tienda
+        // dirige al usuario a la pantalla de su rol
         setTimeout(() => this.router.navigate([this.authService.rutaInicial(respuesta.rol)]), 1300);
       },
       error: (error) => {

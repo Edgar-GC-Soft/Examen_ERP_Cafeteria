@@ -4,7 +4,7 @@ import { PaypalService } from '../../servicios/paypal-service';
 import { CarritoService } from '../../servicios/carrito-service';
 import { mensajeError } from '../../util/util';
 
-// PayPal regresa aqui despues de que el cliente aprueba el pago: /pago-paypal?token=ID_DE_ORDEN
+// paypal vuelve aqui cuando el cliente aprueba el pago
 @Component({
   selector: 'app-pago-paypal',
   imports: [RouterLink],
@@ -27,7 +27,7 @@ export class PagoPaypal implements OnInit {
       this.mensaje.set('No se recibió la orden de PayPal');
       return;
     }
-    // el backend captura el pago, verifica estado e importe y envia el correo con el recibo y el XML
+    // confirma el pago y envia el recibo
     this.paypalService.capturarOrden(orderId).subscribe({
       next: (r) => {
         this.mensaje.set(`${r.mensaje}. Folio ${r.folio}. ` +

@@ -1,6 +1,6 @@
 const BASE_URL = process.env.PAYPAL_BASE_URL;
 
-// obtener el token de acceso
+// obtiene el token que autoriza las solicitudes a paypal
 async function obtenerToken() {
     const clientID = process.env.PAYPAL_CLIENT_ID;
     const secret = process.env.PAYPAL_CLIENT_SECRET;
@@ -23,7 +23,7 @@ async function obtenerToken() {
     return datos.access_token;
 }
 
-// enviar peticiones a PayPal
+// envia una solicitud autenticada a la api de paypal
 async function paypalRequest(ruta, metodo, body) {
     const token = await obtenerToken();
 

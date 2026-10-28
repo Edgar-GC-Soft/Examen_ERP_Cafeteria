@@ -24,7 +24,7 @@ export class AuthService {
     return this.http.post<RespuestaLogin>(`${this.apiServerUrl}/login`, credenciales);
   }
 
-  // sesion
+  // guarda el token y los datos del usuario al iniciar sesion
   guardarSesion(respuesta: RespuestaLogin): void {
     const usuario = { nombre: respuesta.nombre, correo: respuesta.correo, rol: respuesta.rol };
     this.almacen?.setItem('token', respuesta.token);
@@ -36,6 +36,7 @@ export class AuthService {
     return this.almacen?.getItem('token') ?? null;
   }
 
+  // recupera los datos guardados al cargar la aplicacion
   private leerUsuario(): UsuarioSesion | null {
     const datos = this.almacen?.getItem('usuario');
     return datos ? JSON.parse(datos) : null;

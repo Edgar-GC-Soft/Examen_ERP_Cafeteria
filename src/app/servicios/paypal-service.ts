@@ -10,11 +10,12 @@ export class PaypalService {
 
   constructor(private http: HttpClient) {}
 
-  // envia los productos al backend (el backend calcula el total con los precios de la BD)
+  // solicita al backend crear la orden y calcular el total
   crearOrden(productos: ProductoCarrito[], datos: DatosFiscales) {
     return this.http.post<OrdenPayPal>(`${this.api}/orden`, { productos, ...datos });
   }
 
+  // solicita al backend confirmar el pago de la orden
   capturarOrden(orderId: string) {
     return this.http.post<ResultadoPago>(`${this.api}/capturar/${orderId}`, {});
   }

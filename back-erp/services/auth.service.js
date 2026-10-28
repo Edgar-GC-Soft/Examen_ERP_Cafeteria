@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const { consultar } = require('../config/db');
 const { ErrorHttp } = require('../middleware/errores');
 
+// valida al usuario y crea el token de sesion
 async function login(correo, contrasena) {
     if (!correo || !contrasena) {
         throw new ErrorHttp(400, 'Correo y contraseña son obligatorios');

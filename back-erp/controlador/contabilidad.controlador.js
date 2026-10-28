@@ -1,7 +1,7 @@
 const contabilidadService = require('../services/contabilidad.service');
 const xmlService = require('../services/xml.service');
 
-// GET /api/contabilidad?desde=&hasta=&tipo=&origen=&buscar=
+// GET /api/contabilidad
 async function obtenerTransacciones(req, res) {
     res.json(await contabilidadService.obtenerTransacciones(req.query));
 }

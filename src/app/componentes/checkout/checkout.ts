@@ -53,6 +53,7 @@ export class Checkout {
 
   // pago en efectivo
   confirmarEfectivo(): void {
+    // valida los datos antes de registrar la venta
     const problema = this.validarDatos();
     if (problema) {
       this.error.set(problema);
@@ -60,10 +61,12 @@ export class Checkout {
     }
     this.error.set('');
     this.cargando.set(true);
+    // registra la venta y muestra el resultado
     this.ventaService.registrarVentaEfectivo(this.carrito.productos(), this.datosFiscales()).subscribe({
       next: (r) => {
         this.mensaje.set(`Venta registrada con folio ${r.folio}. ` +
           (r.correoEnviado ? 'Te enviamos el comprobante XML por correo.' : 'No se pudo enviar el correo, reenvíalo desde tu historial.'));
+        // vacía el carrito cuando la venta se registra correctamente
         this.carrito.vaciar();
         this.pagado.set(true);
         this.cargando.set(false);
@@ -72,7 +75,7 @@ export class Checkout {
     });
   }
 
-  // pago con PayPal: se crea la orden y se redirige a la pagina de PayPal (ahi inicia sesion y paga)
+  // crea la orden en el servidor y redirige a paypal para pagar
   async pagarConPaypal() {
     const problema = this.validarDatos();
     if (problema) {
@@ -82,10 +85,12 @@ export class Checkout {
     this.error.set('');
     this.cargando.set(true);
     try {
+      // obtiene la url de pago de la orden creada
       const orden = await firstValueFrom(
         this.paypalService.crearOrden(this.carrito.productos(), this.datosFiscales())
       );
-      window.location.href = orden.urlPago; // PayPal regresa a /pago-paypal cuando se aprueba el pago
+      // paypal regresa a la app cuando se aprueba el pago
+      window.location.href = orden.urlPago;
     } catch (e) {
       this.error.set(mensajeError(e, 'No se pudo iniciar el pago'));
       this.cargando.set(false);

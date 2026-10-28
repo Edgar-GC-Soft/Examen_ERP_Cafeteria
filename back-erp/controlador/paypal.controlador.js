@@ -3,12 +3,15 @@ const ventaService = require('../services/venta.service');
 const correoService = require('../services/correo.service');
 const { consultar } = require('../config/db');
 
+// crea la venta y la orden de pago
 async function crearOrden(req, res) {
     try {
         console.log('0. llego la peticion, usuario', req.usuario?.id, 'productos:', JSON.stringify(req.body.productos));
+        // usa el total calculado por el servidor
         const { ventaId, total } = await ventaService.crearVenta(req.usuario.id, { ...req.body, metodoPago: 'paypal' });
         console.log('1. venta creada', ventaId, 'total', total);
 
+        // configura las url de regreso del pago
         const frontend = process.env.FRONTEND_URL || 'http://localhost:4200';
         const orden = await paypalRequest('/v2/checkout/orders', 'POST', {
             intent: 'CAPTURE',
@@ -26,41 +29,43 @@ async function crearOrden(req, res) {
             }
         });
         console.log('2. PayPal respondio', orden.id);
+        // vincula la orden de paypal con la venta
         await consultar('UPDATE ventas SET paypal_order_id = ? WHERE id = ?', [orden.id, ventaId]);
         console.log('3. orden guardada');
-        // liga de la pagina de PayPal donde el cliente inicia sesion y paga
+        // obtiene el enlace para pagar
         const liga = orden.links.find((l) => l.rel === 'payer-action');
         if (!liga) {
             throw new Error('PayPal no devolvio la liga de pago');
         }
         res.json({ id: orden.id, total, urlPago: liga.href });
     } catch (error) {
-        if (error.status) throw error; // errores de validacion (400, 409...)
+        if (error.status) throw error; // conserva errores de validacion
         console.error(error);
         res.status(502).json({ mensaje: 'No se pudo crear la orden' });
     }
 }
 
+// confirma el pago y completa la venta
 async function capturarOrden(req, res) {
     const { orderId } = req.params;
     try {
-        // recuperar la orden local (solo la del usuario que la creo)
+        // busca la orden del usuario autenticado
         const [venta] = await consultar(
             'SELECT * FROM ventas WHERE paypal_order_id = ? AND cliente_id = ?', [orderId, req.usuario.id]
         );
         if (!venta) {
             return res.status(404).json({ mensaje: 'Orden no encontrada' });
         }
-        // solo una peticion puede pasar de CREADA a PROCESANDO
+        // evita procesar la venta más de una vez
         const paso = await consultar("UPDATE ventas SET estado = 'PROCESANDO' WHERE id = ? AND estado = 'CREADA'", [venta.id]);
         if (paso.affectedRows === 0) {
             return res.status(409).json({ mensaje: 'La orden ya fue procesada' });
         }
 
-        // solicitar captura a PayPal
+        // solicita el cobro a paypal
         const resultado = await paypalRequest(`/v2/checkout/orders/${orderId}/capture`, 'POST');
 
-        // verificar estado e importe
+        // verifica el estado, la moneda y el importe del pago
         const captura = resultado.purchase_units
             ?.flatMap((u) => u.payments?.captures || [])
             .find((c) => c.status === 'COMPLETED');
@@ -74,7 +79,7 @@ async function capturarOrden(req, res) {
             return res.status(409).json({ mensaje: 'Pago pendiente de verificacion' });
         }
 
-        // registrar el pago en la bd (stock, ingreso y XML) y mandar el correo con el recibo
+        // actualiza la venta y envía el recibo
         const datos = await ventaService.completarVenta(venta.id);
         const correoEnviado = await correoService.enviarRecibo({ ...datos, captureId: captura.id });
 
@@ -84,7 +89,7 @@ async function capturarOrden(req, res) {
         });
     } catch (error) {
         console.error(error);
-        // no asumir que el pago fallo
+        // requiere revisar el pago porque pudo completarse en paypal
         await consultar("UPDATE ventas SET estado = 'REVISION' WHERE paypal_order_id = ? AND estado = 'PROCESANDO'", [orderId]);
         res.status(502).json({ mensaje: 'Verificar estado del pago' });
     }

@@ -1,4 +1,4 @@
-// Los modelos se crean a mano (no llevan comando)
+
 
 // ---- autenticacion ----
 export interface Credenciales { // datos enviados al backend
